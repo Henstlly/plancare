@@ -1,0 +1,257 @@
+{
+	"info": {
+		"name": "PlanCare API",
+		"description": "Коллекция запросов для тестирования API PlanCare (План ухода за питомцами)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "token",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "1. Авторизация (JWT)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"token\", \"Bearer \" + jsonData.access);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"username\": \"user\", \"password\": \"user\"}"
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/jwt/create/",
+					"host": ["{{base_url}}"],
+					"path": ["auth", "jwt", "create", ""]
+				}
+			}
+		},
+		{
+			"name": "2. Список плана ухода",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/care-plan/",
+					"host": ["{{base_url}}"],
+					"path": ["care-plan", ""]
+				}
+			}
+		},
+		{
+			"name": "3. Создать пункт плана (позитивный)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"cat\": 1, \"action_type\": \"feed\", \"feed\": 1, \"scheduled_time\": \"12:00:00\", \"notes\": \"Обед\"}"
+				},
+				"url": {
+					"raw": "{{base_url}}/care-plan/",
+					"host": ["{{base_url}}"],
+					"path": ["care-plan", ""]
+				}
+			}
+		},
+		{
+			"name": "4. Отметить выполнение",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"notes\": \"Кормление выполнено\"}"
+				},
+				"url": {
+					"raw": "{{base_url}}/care-plan/1/execute/",
+					"host": ["{{base_url}}"],
+					"path": ["care-plan", "1", "execute", ""]
+				}
+			}
+		},
+		{
+			"name": "5. Отменить пункт",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"notes\": \"Отменено по причине болезни\"}"
+				},
+				"url": {
+					"raw": "{{base_url}}/care-plan/2/cancel/",
+					"host": ["{{base_url}}"],
+					"path": ["care-plan", "2", "cancel", ""]
+				}
+			}
+		},
+		{
+			"name": "6. История выполнения пункта",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/care-plan/1/history/",
+					"host": ["{{base_url}}"],
+					"path": ["care-plan", "1", "history", ""]
+				}
+			}
+		},
+		{
+			"name": "7. Логи по коту (фильтрация)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/execution-logs/?cat=1&status=completed",
+					"host": ["{{base_url}}"],
+					"path": ["execution-logs", ""],
+					"query": [
+						{"key": "cat", "value": "1"},
+						{"key": "status", "value": "completed"}
+					]
+				}
+			}
+		},
+		{
+			"name": "8. НЕГАТИВ: чужой кот (400)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"cat\": 3, \"action_type\": \"feed\", \"feed\": 1, \"scheduled_time\": \"12:00:00\"}"
+				},
+				"url": {
+					"raw": "{{base_url}}/care-plan/",
+					"host": ["{{base_url}}"],
+					"path": ["care-plan", ""]
+				}
+			}
+		},
+		{
+			"name": "9. НЕГАТИВ: без корма (400)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"cat\": 1, \"action_type\": \"feed\", \"scheduled_time\": \"14:00:00\"}"
+				},
+				"url": {
+					"raw": "{{base_url}}/care-plan/",
+					"host": ["{{base_url}}"],
+					"path": ["care-plan", ""]
+				}
+			}
+		},
+		{
+			"name": "10. НЕГАТИВ: короткое имя кота (400)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"name\": \"A\", \"color\": \"Gray\", \"birth_year\": 2020}"
+				},
+				"url": {
+					"raw": "{{base_url}}/cats/",
+					"host": ["{{base_url}}"],
+					"path": ["cats", ""]
+				}
+			}
+		}
+	]
+}
