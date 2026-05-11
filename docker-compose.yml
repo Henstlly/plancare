@@ -1,0 +1,17 @@
+name: plancare
+
+services:
+  web:
+    container_name: plancare-web
+    build: .
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    restart: unless-stopped
+    labels:
+      - "dev.docs.description=API плана ухода за питомцами"
+      - "dev.docs.port=8000"
